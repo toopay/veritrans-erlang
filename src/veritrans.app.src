@@ -1,0 +1,17 @@
+{application, veritrans, [
+	{description, "Veritrans Client for Erlang"},
+	{vsn, "1.0.0"},
+	{id, "git"},
+	{modules, []},
+	{registered, []},
+	{applications, [
+		kernel,
+		stdlib,
+		crypto,
+		public_key,
+		ssl,
+		ibrowse
+	]},
+	{mod, {veritrans_app, []}},
+	{env, []}
+]}.
