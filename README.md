@@ -1,2 +1,2 @@
-# veritrans-erlang
-Erlang client library for Veritrans
+# Veritrans-Erlang
+Erlang client library for Veritrans (VT-Direct).
