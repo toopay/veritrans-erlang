@@ -1,3 +1,13 @@
+-define(SANDBOX_ROOT, <<"https://api.sandbox.veritrans.co.id/v2">>).
+-define(LIVE_ROOT, <<"https://api.veritrans.co.id/v2">>).
+-define(TOKEN_ENDPOINT, <<"/token">>).
+-define(CHARGE_ENDPOINT, <<"/charge">>).
+-define(CAPTURE_ENDPOINT, <<"/capture">>).
+-define(APPROVE_SUFFIX_ENDPOINT, <<"/approve">>).
+-define(CANCEL_SUFFIX_ENDPOINT, <<"/cancel">>).
+-define(STATUS_SUFFIX_ENDPOINT, <<"/status">>).
+-define(EXPIRE_SUFFIX_ENDPOINT, <<"/expire">>).
+
 -record(card, {
 	token_id = <<>> :: binary(),
 	bank = <<>> :: binary()
