@@ -10,7 +10,8 @@
 		crypto,
 		public_key,
 		ssl,
-		ibrowse
+		ibrowse,
+		jsx
 	]},
 	{mod, {veritrans_app, []}},
 	{env, []}
