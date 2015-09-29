@@ -13,6 +13,9 @@
     status/1,
     expire/1
 ]).
+-export([
+    charge_credit_card/6
+]).
 
 %% Gen server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -56,9 +59,32 @@ set_flag(Flag) ->
     gen_server:cast(?MODULE, {change_flag, Flag}), %% Async call to set the current flag
     ok.
 
+%% @doc Charge credit card 
+-spec charge_credit_card(binary(), binary(), binary(), integer(), list(), list()) -> tuple().
+charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetails) ->
+    charge(#credit_card_data{
+            credit_card=#card{token_id=Token,bank=Bank},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            item_details=ItemDetails,
+            customer_details=CustomerDetails
+        }).
+
 %% @doc Do the charge
+-spec charge(credit_card_data()
+                        | mandiri_clickpay_data()
+                        | mandiri_echannel_data()
+                        | mandiri_ecash_data()
+                        | cimb_clicks_data()
+                        | virtual_account_data()
+                        | bri_epay_data()
+                        | tcash_data()
+                        | xl_tunai_data()
+                        | bbm_money_data()
+                        | indomaret_data()
+                        | indosat_dompetku_data()) -> tuple().
 charge(Data) ->
-    gen_server:call(?MODULE, {post, ?CHARGE_ENDPOINT, Data},?DEFAULT_TIMEOUT).
+    Payload = get_payload(Data),
+    gen_server:call(?MODULE, {post, ?CHARGE_ENDPOINT, Payload},?DEFAULT_TIMEOUT).
 
 %% @doc Capture authorized transaction
 capture(Data) ->
@@ -216,3 +242,61 @@ get_binary(List) when is_list(List)-> list_to_binary(List);
 get_binary(Tuple) when is_tuple(Tuple) ->
     {_, Val} = Tuple,
     get_binary(Val).
+
+%% @doc Get the json payload from item type
+get_payload(#custom_expiry{} = Payload) ->
+  lists:zip(record_info(fields, custom_expiry), tl(tuple_to_list(Payload)));
+get_payload(#transaction_details{} = Payload) ->
+  lists:zip(record_info(fields, transaction_details), tl(tuple_to_list(Payload)));
+get_payload(#item_detail{} = Payload) ->
+  lists:zip(record_info(fields, item_detail), tl(tuple_to_list(Payload)));
+get_payload(#customer_details{} = Payload) ->
+  lists:zip(record_info(fields, customer_details), tl(tuple_to_list(Payload)));
+get_payload(#address{} = Payload) ->
+  lists:zip(record_info(fields, address), tl(tuple_to_list(Payload)));
+
+%% @doc Get the json payload from driver specific
+get_payload(#card{} = Payload) ->
+  lists:zip(record_info(fields, card), tl(tuple_to_list(Payload)));
+get_payload(#mandiri_clickpay{} = Payload) ->
+  lists:zip(record_info(fields, mandiri_clickpay), tl(tuple_to_list(Payload)));
+get_payload(#mandiri_echannel{} = Payload) ->
+  lists:zip(record_info(fields, mandiri_echannel), tl(tuple_to_list(Payload)));
+get_payload(#cimb_clicks{} = Payload) ->
+  lists:zip(record_info(fields, cimb_clicks), tl(tuple_to_list(Payload)));
+get_payload(#virtual_account{} = Payload) ->
+  lists:zip(record_info(fields, virtual_account), tl(tuple_to_list(Payload)));
+get_payload(#tcash{} = Payload) ->
+  lists:zip(record_info(fields, tcash), tl(tuple_to_list(Payload)));
+get_payload(#cstore{} = Payload) ->
+  lists:zip(record_info(fields, cstore), tl(tuple_to_list(Payload)));
+get_payload(#indosat_dompetku{} = Payload) ->
+  lists:zip(record_info(fields, indosat_dompetku), tl(tuple_to_list(Payload)));
+
+%% @doc Get the json payload from data
+get_payload(#credit_card_data{} = Payload) ->
+  lists:zip(record_info(fields, credit_card_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#mandiri_clickpay_data{} = Payload) ->
+  lists:zip(record_info(fields, mandiri_clickpay_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#mandiri_echannel_data{} = Payload) ->
+  lists:zip(record_info(fields, mandiri_echannel_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#mandiri_ecash_data{} = Payload) ->
+  lists:zip(record_info(fields, mandiri_ecash_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#cimb_clicks_data{} = Payload) ->
+  lists:zip(record_info(fields, cimb_clicks_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#virtual_account_data{} = Payload) ->
+  lists:zip(record_info(fields, virtual_account_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#bri_epay_data{} = Payload) ->
+  lists:zip(record_info(fields, bri_epay_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#tcash_data{} = Payload) ->
+  lists:zip(record_info(fields, tcash_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#xl_tunai_data{} = Payload) ->
+  lists:zip(record_info(fields, xl_tunai_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#bbm_money_data{} = Payload) ->
+  lists:zip(record_info(fields, bbm_money_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#indomaret_data{} = Payload) ->
+  lists:zip(record_info(fields, indomaret_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(#indosat_dompetku_data{} = Payload) ->
+  lists:zip(record_info(fields, indosat_dompetku_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+get_payload(Other) ->
+  Other.
