@@ -32,7 +32,7 @@ Now we can perform any Veritrans VT-Direct operations.
 `charge_xl_tunai/6` | `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_bbm_money/6` | `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_cstore/8` | `Store :: binary()`, `Message :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
-`charge_indosat_dompetku/7` | MSISDN :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
+`charge_indosat_dompetku/7` | `MSISDN :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 
 ## LICENSE
 
