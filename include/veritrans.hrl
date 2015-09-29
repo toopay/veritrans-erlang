@@ -1,3 +1,6 @@
+%%====================================================================
+%% Endpoints
+%%====================================================================
 -define(SANDBOX_ROOT, <<"https://api.sandbox.veritrans.co.id/v2">>).
 -define(LIVE_ROOT, <<"https://api.veritrans.co.id/v2">>).
 -define(TOKEN_ENDPOINT, <<"/token">>).
@@ -8,9 +11,53 @@
 -define(STATUS_SUFFIX_ENDPOINT, <<"/status">>).
 -define(EXPIRE_SUFFIX_ENDPOINT, <<"/expire">>).
 
+%%====================================================================
+%% Item types
+%%====================================================================
+-record(custom_expiry, {
+	order_time = <<>> :: binary(),
+	expiry_duration = 1 :: integer(),
+	unit = <<"hour">> :: binary()
+}).
+
+-record(transaction_details, {
+	order_id = <<>> :: binary(),
+	gross_amount = 0 :: integer()
+}).
+
+-record(item_detail, {
+	id = <<>> :: binary(),
+	price = 0 :: integer(),
+	quantity = 0 :: integer(),
+	name = <<>> :: binary()
+}).
+
+-record(customer_details, {
+	first_name = <<>> :: binary(),
+	last_name = <<>> :: binary(),
+	email = <<>> :: binary(),
+	phone = <<>> :: binary(),
+	billing_address = [] :: list(),
+	shipping_address = [] :: list()
+}).
+
+-record(address, {
+	first_name = <<>> :: binary(),
+	last_name = <<>> :: binary(),
+	address = <<>> :: binary(),
+	city = <<>> :: binary(),
+	postal_code = <<>> :: binary(),
+	phone = <<>> :: binary(),
+	country_code = <<>> :: binary()
+}).
+
 -record(card, {
 	token_id = <<>> :: binary(),
-	bank = <<>> :: binary()
+	bank = <<>> :: binary(),
+	installment_term = 0 :: integer(),
+	bins = [] :: list(),
+	type = <<>> :: binary(),
+	save_token_id = false :: atom()
 }).
 
 -record(mandiri_clickpay, {
@@ -49,6 +96,9 @@
 	msisdn = <<>> :: binary()
 }).
 
+%%====================================================================
+%% Payment data types
+%%====================================================================
 -record(credit_card_data, {
 	payment_type = <<"credit_card">> :: binary(),
 	credit_card = #card{} :: card(),
@@ -131,6 +181,11 @@
 	customer_details = [] :: list()
 }).
 
+-type custom_expiry() :: #custom_expiry{}.
+-type transaction_details() :: #transaction_details{}.
+-type item_detail() :: #item_detail{}.
+-type customer_details() :: #customer_details{}.
+-type address() :: #address{}.
 -type card() :: #card{}.
 -type mandiri_clickpay() :: #mandiri_clickpay{}.
 -type mandiri_echannel() :: #mandiri_echannel{}.
@@ -153,7 +208,12 @@
 -type indosat_dompetku_data() :: #indosat_dompetku_data{}.
 
 -export_type([
-	card/0
+	custom_expiry/0
+	,transaction_details/0
+	,item_detail/0
+	,customer_details/0
+	,address/0
+	,card/0
 	,mandiri_clickpay/0
 	,mandiri_echannel/0
 	,cimb_clicks/0
