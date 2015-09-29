@@ -107,21 +107,21 @@ init(_) ->
 %%--------------------------------------------------------------------
 handle_call({post, Endpoint, Params}, _From, State) ->
     Url = build_url(State#state.flag, Endpoint),
-    Reply = case ibrowse:send_req(get_list(Url), [], post, jsx:encode(Params), build_options(State#state.key)) of
+    Reply = case ibrowse:send_req(get_list(Url), build_headers(), post, jsx:encode(Params), build_options(State#state.key)) of
         {ok, _Status, _Head, Body} -> {ok, get_data(Body)};
         {error, Reason} -> {error, get_binary(Reason)}
     end,
     {reply, Reply, State};
 handle_call({post_with_placeholder, Endpoint, Param}, _From, State) ->
     Url = build_url_with_prefix(State#state.flag, Endpoint, Param),
-    Reply = case ibrowse:send_req(get_list(Url), [], post, [], build_options(State#state.key)) of
+    Reply = case ibrowse:send_req(get_list(Url), build_headers(), post, [], build_options(State#state.key)) of
         {ok, _Status, _Head, Body} -> {ok, get_data(Body)};
         {error, Reason} -> {error, get_binary(Reason)}
     end,
     {reply, Reply, State};
 handle_call({get_with_placeholder, Endpoint, Param}, _From, State) ->
     Url = build_url_with_prefix(State#state.flag, Endpoint, Param),
-    Reply = case ibrowse:send_req(get_list(Url), [], get, [], build_options(State#state.key)) of
+    Reply = case ibrowse:send_req(get_list(Url), build_headers(), get, [], build_options(State#state.key)) of
         {ok, _Status, _Head, Body} -> {ok, get_data(Body)};
         {error, Reason} -> {error, get_binary(Reason)}
     end,
@@ -183,6 +183,13 @@ build_url(Flag, Endpoint) ->
 %% @doc Generate a url with prefix
 build_url_with_prefix(Flag, Endpoint, Prefix) ->
     build_url(Flag, <<"/",Prefix/binary,Endpoint/binary>>).
+
+%% @doc Generates headers
+build_headers() ->
+    [
+        {"Content-Type","application/json"},
+        {"Accept","application/json"}
+    ].
 
 %% @doc Generates options
 build_options(Key) ->
