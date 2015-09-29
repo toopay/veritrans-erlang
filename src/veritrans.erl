@@ -26,6 +26,8 @@
     ,charge_mandiri_ecash/6
     ,charge_cimb_clicks/7
     ,charge_virtual_account/7
+    ,charge_bri_epay/6
+    ,charge_tcash/7
 ]).
 
 %% Gen server callbacks
@@ -203,6 +205,33 @@ charge_cimb_clicks(Description, OrderId, GrossAmount, FirstName, LastName, Email
 charge_virtual_account(BankName, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
      charge(#virtual_account_data{
             bank_transfer=#virtual_account{bank=BankName},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge BRI EPay
+-spec charge_bri_epay(binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_bri_epay(OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#bri_epay_data{
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge TCash
+-spec charge_tcash(binary(), binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_tcash(TokenNumber, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#tcash_data{
+            telkomsel_cash=#tcash{token_number=TokenNumber},
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             customer_details=#customer_details{
                 first_name=FirstName,
