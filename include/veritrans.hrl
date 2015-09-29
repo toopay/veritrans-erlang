@@ -83,8 +83,8 @@
 
 -record(tcash, {
 	customer = <<>> :: binary(),
-	promo = <<"false">> :: binary(),
-	is_reversal = <<"0">> :: binary()
+	promo = false :: atom(),
+	is_reversal = 0 :: integer()
 }).
 
 -record(cstore, {
