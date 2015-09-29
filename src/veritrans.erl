@@ -23,6 +23,9 @@
     ,charge_mandiri_clickpay/8
     ,charge_mandiri_echannel/5
     ,charge_mandiri_echannel/6
+    ,charge_mandiri_ecash/6
+    ,charge_cimb_clicks/7
+    ,charge_virtual_account/7
 ]).
 
 %% Gen server callbacks
@@ -164,6 +167,49 @@ charge_mandiri_echannel(BillInfo1, BillInfo2, OrderId,
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             item_details=ItemDetails,
             customer_details=CustomerDetails
+        }).
+
+%% @doc Charge Mandiri ECash
+-spec charge_mandiri_ecash(binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_mandiri_ecash(OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#mandiri_ecash_data{
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge CIMB Clicks
+-spec charge_cimb_clicks(binary(), binary(), binary(), binary(),
+                        binary(), binary(), binary()) -> tuple().
+charge_cimb_clicks(Description, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#cimb_clicks_data{
+            cimb_clicks=#cimb_clicks{description=Description},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge virtual account
+-spec charge_virtual_account(binary(), binary(), binary(), binary(),
+                        binary(), binary(), binary()) -> tuple().
+charge_virtual_account(BankName, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#virtual_account_data{
+            bank_transfer=#virtual_account{bank=BankName},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
         }).
 
 %% @doc Do the charge
