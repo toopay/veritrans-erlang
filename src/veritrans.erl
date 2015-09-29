@@ -6,6 +6,9 @@
 -export([
     set_key/1,
     set_flag/1,
+    address/7,
+    item_detail/4,
+    customer_details/6,
     charge/1,
     capture/1,
     approve/1,
@@ -18,6 +21,8 @@
     ,charge_credit_card/6
     ,charge_mandiri_clickpay/7
     ,charge_mandiri_clickpay/8
+    ,charge_mandiri_echannel/5
+    ,charge_mandiri_echannel/6
 ]).
 
 %% Gen server callbacks
@@ -62,12 +67,52 @@ set_flag(Flag) ->
     gen_server:cast(?MODULE, {change_flag, Flag}), %% Async call to set the current flag
     ok.
 
+%% @doc Bundle address
+-spec address(binary(), binary(), binary(), binary(), 
+                binary(), binary(), binary()) -> address().
+address(FirstName, LastName, Address, City, PostalCode, Phone, CountryCode) ->
+    #address{
+        first_name=FirstName,
+        last_name=LastName,
+        address=Address,
+        city=City,
+        postal_code=PostalCode,
+        phone=Phone,
+        country_code=CountryCode
+    }.
+
+%% @doc Bundle item details
+-spec item_detail(binary(), integer(), integer(), binary()) -> item_detail(). 
+item_detail(Id, Price, Quantity, Name) -> 
+    #item_detail{id=Id,price=Price,quantity=Quantity,name=Name}.
+
+%% @doc Bundle customer details
+-spec customer_details(binary(), binary(), binary(), 
+                        binary(), address(), address()) -> customer_details(). 
+customer_details(FirstName, LastName, Email, Phone, BillingAddress, ShippingAddress) ->
+        #customer_details{
+            first_name=FirstName,
+            last_name=LastName,
+            email=Email,
+            phone=Phone,
+            billing_address=BillingAddress,
+            shipping_address=ShippingAddress
+        }.
+
 %% @doc Charge credit card 
--spec charge_credit_card(binary(), binary(), binary(), integer(), list()) -> tuple().
-charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails) ->
-    charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, #customer_details{}).
--spec charge_credit_card(binary(), binary(), binary(), integer(), list(), customer_details()) -> tuple().
-charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetails) ->
+-spec charge_credit_card(binary(), 
+                        binary(), 
+                        binary(), 
+                        integer(), 
+                        list()) -> tuple().
+charge_credit_card(Token, Bank, OrderId,
+                    GrossAmount, ItemDetails) ->
+    charge_credit_card(Token, Bank, OrderId,
+                        GrossAmount, ItemDetails, #customer_details{}).
+-spec charge_credit_card(binary(), binary(), binary(),
+                        integer(), list(), customer_details()) -> tuple().
+charge_credit_card(Token, Bank, OrderId,
+                    GrossAmount, ItemDetails, CustomerDetails) ->
     charge(#credit_card_data{
             credit_card=#card{token_id=Token,bank=Bank},
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
@@ -76,14 +121,48 @@ charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetai
         }).
 
 %% @doc Charge Mandiri Click Pay
--spec charge_mandiri_clickpay(binary(), binary(), binary(), binary(), binary(), binary(), integer()) -> tuple().
-charge_mandiri_clickpay(CardNumber, Input1, Input2, Input3, Token, OrderId, GrossAmount) ->
-    charge_mandiri_clickpay(CardNumber, Input1, Input2, Input3, Token, OrderId, GrossAmount, #customer_details{}).
--spec charge_mandiri_clickpay(binary(), binary(), binary(), binary(), binary(), binary(), integer(), customer_details()) -> tuple().
-charge_mandiri_clickpay(CardNumber, Input1, Input2, Input3, Token, OrderId, GrossAmount, CustomerDetails) ->
+-spec charge_mandiri_clickpay(binary(), binary(), binary(),
+                                binary(), binary(), binary(),
+                                integer()) -> tuple().
+charge_mandiri_clickpay(CardNumber, Input1, Input2,
+                        Input3, Token, OrderId,
+                        GrossAmount) ->
+    charge_mandiri_clickpay(CardNumber, Input1, Input2,
+                            Input3, Token, OrderId,
+                            GrossAmount, #customer_details{}).
+-spec charge_mandiri_clickpay(binary(), binary(), binary(),
+                                binary(), binary(), binary(),
+                                integer(), customer_details()) -> tuple().
+charge_mandiri_clickpay(CardNumber, Input1, Input2,
+                        Input3, Token, OrderId,
+                        GrossAmount, CustomerDetails) ->
     charge(#mandiri_clickpay_data{
-            mandiri_clickpay=#mandiri_clickpay{card_number=CardNumber,input1=Input1,input2=Input2,input3=Input3,token=Token},
+            mandiri_clickpay=#mandiri_clickpay{
+                card_number=CardNumber,
+                input1=Input1,
+                input2=Input2,
+                input3=Input3,
+                token=Token
+            },
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=CustomerDetails
+        }).
+
+%% @doc Charge Mandiri EChannel
+-spec charge_mandiri_echannel(binary(), binary(), binary(),
+                                integer(), list()) -> tuple().
+charge_mandiri_echannel(BillInfo1, BillInfo2, OrderId,
+                        GrossAmount, ItemDetails) ->
+    charge_mandiri_echannel(BillInfo1, BillInfo2, OrderId,
+                            GrossAmount, ItemDetails, #customer_details{}).
+-spec charge_mandiri_echannel(binary(), binary(), binary(),
+                                integer(), list(), customer_details()) -> tuple().
+charge_mandiri_echannel(BillInfo1, BillInfo2, OrderId,
+                        GrossAmount, ItemDetails, CustomerDetails) ->
+    charge(#mandiri_echannel_data{
+            echannel=#mandiri_echannel{bill_info1=BillInfo1,bill_info2=BillInfo2},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            item_details=ItemDetails,
             customer_details=CustomerDetails
         }).
 
@@ -110,19 +189,35 @@ capture(Data) ->
 
 %% @doc Get a transaction status
 status(TransactionId) ->
-    gen_server:call(?MODULE, {get_with_placeholder, ?STATUS_SUFFIX_ENDPOINT, get_binary(TransactionId)},?DEFAULT_TIMEOUT).
+    gen_server:call(?MODULE, {
+        get_with_placeholder, 
+        ?STATUS_SUFFIX_ENDPOINT, 
+        get_binary(TransactionId)
+    },?DEFAULT_TIMEOUT).
 
 %% @doc Approve a pending transaction
 approve(TransactionId) ->
-    gen_server:call(?MODULE, {post_with_placeholder, ?APPROVE_SUFFIX_ENDPOINT, get_binary(TransactionId)},?DEFAULT_TIMEOUT).
+    gen_server:call(?MODULE, {
+        post_with_placeholder, 
+        ?APPROVE_SUFFIX_ENDPOINT, 
+        get_binary(TransactionId)
+    },?DEFAULT_TIMEOUT).
 
 %% @doc Cancel a pending transaction
 cancel(TransactionId) ->
-    gen_server:call(?MODULE, {post_with_placeholder, ?CANCEL_SUFFIX_ENDPOINT, get_binary(TransactionId)},?DEFAULT_TIMEOUT).
+    gen_server:call(?MODULE, {
+        post_with_placeholder, 
+        ?CANCEL_SUFFIX_ENDPOINT, 
+        get_binary(TransactionId)
+    },?DEFAULT_TIMEOUT).
 
 %% @doc Expires a pending transaction
 expire(TransactionId) ->
-    gen_server:call(?MODULE, {post_with_placeholder, ?EXPIRE_SUFFIX_ENDPOINT, get_binary(TransactionId)},?DEFAULT_TIMEOUT).
+    gen_server:call(?MODULE, {
+        post_with_placeholder, 
+        ?EXPIRE_SUFFIX_ENDPOINT, 
+        get_binary(TransactionId)
+    },?DEFAULT_TIMEOUT).
 
 %%====================================================================
 %% gen_server callbacks
@@ -151,21 +246,32 @@ init(_) ->
 %%--------------------------------------------------------------------
 handle_call({post, Endpoint, Params}, _From, State) ->
     Url = build_url(State#state.flag, Endpoint),
-    Reply = case ibrowse:send_req(get_list(Url), build_headers(), post, jsx:encode(Params), build_options(State#state.key)) of
+    Reply = case ibrowse:send_req(
+                get_list(Url), 
+                build_headers(), 
+                post, 
+                jsx:encode(Params), 
+                build_options(State#state.key)) of
         {ok, _Status, _Head, Body} -> {ok, get_data(Body)};
         {error, Reason} -> {error, get_binary(Reason)}
     end,
     {reply, Reply, State};
 handle_call({post_with_placeholder, Endpoint, Param}, _From, State) ->
     Url = build_url_with_prefix(State#state.flag, Endpoint, Param),
-    Reply = case ibrowse:send_req(get_list(Url), build_headers(), post, [], build_options(State#state.key)) of
+    Reply = case ibrowse:send_req(
+                get_list(Url), 
+                build_headers(), 
+                post, [], build_options(State#state.key)) of
         {ok, _Status, _Head, Body} -> {ok, get_data(Body)};
         {error, Reason} -> {error, get_binary(Reason)}
     end,
     {reply, Reply, State};
 handle_call({get_with_placeholder, Endpoint, Param}, _From, State) ->
     Url = build_url_with_prefix(State#state.flag, Endpoint, Param),
-    Reply = case ibrowse:send_req(get_list(Url), build_headers(), get, [], build_options(State#state.key)) of
+    Reply = case ibrowse:send_req(
+                get_list(Url), 
+                build_headers(), 
+                get, [], build_options(State#state.key)) of
         {ok, _Status, _Head, Body} -> {ok, get_data(Body)};
         {error, Reason} -> {error, get_binary(Reason)}
     end,
@@ -329,28 +435,40 @@ get_payload(#indosat_dompetku{} = Payload) ->
 
 %% @doc Get the json payload from data
 get_payload(#credit_card_data{} = Payload) ->
-  lists:zip(record_info(fields, credit_card_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, credit_card_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#mandiri_clickpay_data{} = Payload) ->
-  lists:zip(record_info(fields, mandiri_clickpay_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, mandiri_clickpay_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#mandiri_echannel_data{} = Payload) ->
-  lists:zip(record_info(fields, mandiri_echannel_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, mandiri_echannel_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#mandiri_ecash_data{} = Payload) ->
-  lists:zip(record_info(fields, mandiri_ecash_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, mandiri_ecash_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#cimb_clicks_data{} = Payload) ->
-  lists:zip(record_info(fields, cimb_clicks_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, cimb_clicks_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#virtual_account_data{} = Payload) ->
-  lists:zip(record_info(fields, virtual_account_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, virtual_account_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#bri_epay_data{} = Payload) ->
-  lists:zip(record_info(fields, bri_epay_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, bri_epay_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#tcash_data{} = Payload) ->
-  lists:zip(record_info(fields, tcash_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, tcash_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#xl_tunai_data{} = Payload) ->
-  lists:zip(record_info(fields, xl_tunai_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, xl_tunai_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#bbm_money_data{} = Payload) ->
-  lists:zip(record_info(fields, bbm_money_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, bbm_money_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#indomaret_data{} = Payload) ->
-  lists:zip(record_info(fields, indomaret_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, indomaret_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(#indosat_dompetku_data{} = Payload) ->
-  lists:zip(record_info(fields, indosat_dompetku_data), [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
+  lists:zip(record_info(fields, indosat_dompetku_data), 
+    [ get_payload(MaybeTuple) || MaybeTuple <- tl(tuple_to_list(Payload))]);
 get_payload(Other) ->
   Other.
