@@ -28,7 +28,7 @@ Now we can perform any Veritrans VT-Direct operations.
 `charge_cimb_clicks/7` | `Description :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_virtual_account/7` | `BankName :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_bri_epay/6` | `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
-`charge_tcash/7 | TokenNumber :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
+`charge_tcash/7` | `TokenNumber :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_xl_tunai/6` | `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_bbm_money/6` | `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
 `charge_cstore/8` | `Store :: binary()`, `Message :: binary()`, `OrderId :: binary()`, `GrossAmount :: integer()`, `FirstName :: binary()`, `LastName :: binary()`, `Email :: binary()`, `Phone :: binary()`
