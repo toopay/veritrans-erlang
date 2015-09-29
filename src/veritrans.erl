@@ -31,6 +31,7 @@
     ,charge_xl_tunai/6
     ,charge_bbm_money/6
     ,charge_cstore/8
+    ,charge_indosat_dompetku/7
 ]).
 
 %% Gen server callbacks
@@ -275,6 +276,20 @@ charge_bbm_money(OrderId, GrossAmount, FirstName, LastName, Email, Phone) ->
 charge_cstore(Store, Message, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
      charge(#indomaret_data{
             cstore=#cstore{store=Store, message=Message},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge Indosat Dompetku
+-spec charge_indosat_dompetku(binary(), binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_indosat_dompetku(MSISDN, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#indosat_dompetku_data{
+            indosat_dompetku=#indosat_dompetku{msisdn=MSISDN},
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             customer_details=#customer_details{
                 first_name=FirstName,
