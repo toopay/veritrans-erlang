@@ -16,6 +16,8 @@
 -export([
     charge_credit_card/5
     ,charge_credit_card/6
+    ,charge_mandiri_clickpay/7
+    ,charge_mandiri_clickpay/8
 ]).
 
 %% Gen server callbacks
@@ -70,6 +72,18 @@ charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetai
             credit_card=#card{token_id=Token,bank=Bank},
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             item_details=ItemDetails,
+            customer_details=CustomerDetails
+        }).
+
+%% @doc Charge Mandiri Click Pay
+-spec charge_mandiri_clickpay(binary(), binary(), binary(), binary(), binary(), binary(), integer()) -> tuple().
+charge_mandiri_clickpay(CardNumber, Input1, Input2, Input3, Token, OrderId, GrossAmount) ->
+    charge_mandiri_clickpay(CardNumber, Input1, Input2, Input3, Token, OrderId, GrossAmount, #customer_details{}).
+-spec charge_mandiri_clickpay(binary(), binary(), binary(), binary(), binary(), binary(), integer(), customer_details()) -> tuple().
+charge_mandiri_clickpay(CardNumber, Input1, Input2, Input3, Token, OrderId, GrossAmount, CustomerDetails) ->
+    charge(#mandiri_clickpay_data{
+            mandiri_clickpay=#mandiri_clickpay{card_number=CardNumber,input1=Input1,input2=Input2,input3=Input3,token=Token},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             customer_details=CustomerDetails
         }).
 
