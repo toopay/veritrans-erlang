@@ -75,17 +75,17 @@ charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetai
 
 %% @doc Do the charge
 -spec charge(credit_card_data()
-                        | mandiri_clickpay_data()
-                        | mandiri_echannel_data()
-                        | mandiri_ecash_data()
-                        | cimb_clicks_data()
-                        | virtual_account_data()
-                        | bri_epay_data()
-                        | tcash_data()
-                        | xl_tunai_data()
-                        | bbm_money_data()
-                        | indomaret_data()
-                        | indosat_dompetku_data()) -> tuple().
+            | mandiri_clickpay_data()
+            | mandiri_echannel_data()
+            | mandiri_ecash_data()
+            | cimb_clicks_data()
+            | virtual_account_data()
+            | bri_epay_data()
+            | tcash_data()
+            | xl_tunai_data()
+            | bbm_money_data()
+            | indomaret_data()
+            | indosat_dompetku_data()) -> tuple().
 charge(Data) ->
     Payload = filter_payload(get_payload(Data)),
     gen_server:call(?MODULE, {post, ?CHARGE_ENDPOINT, Payload},?DEFAULT_TIMEOUT).
