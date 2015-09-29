@@ -28,6 +28,8 @@
     ,charge_virtual_account/7
     ,charge_bri_epay/6
     ,charge_tcash/7
+    ,charge_xl_tunai/6
+    ,charge_bbm_money/6
 ]).
 
 %% Gen server callbacks
@@ -231,7 +233,33 @@ charge_bri_epay(OrderId, GrossAmount, FirstName, LastName, Email, Phone) ->
 -spec charge_tcash(binary(), binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
 charge_tcash(TokenNumber, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
      charge(#tcash_data{
-            telkomsel_cash=#tcash{token_number=TokenNumber},
+            telkomsel_cash=#tcash{customer=TokenNumber},
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge XL Tunai
+-spec charge_xl_tunai(binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_xl_tunai(OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#xl_tunai_data{
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge BBM Money
+-spec charge_bbm_money(binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_bbm_money(OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#bbm_money_data{
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             customer_details=#customer_details{
                 first_name=FirstName,
