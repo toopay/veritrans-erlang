@@ -12,8 +12,39 @@ veritrans:set_flag(sandbox). % Or `live` atom
 ```
 
 Now we can perform any Veritrans VT-Direct operations.
+```erlang
+ItemDetail = #item_detail{id = <<"12345">>,price = 10000,quantity = 1,name = <<"Kool-Aid">>},
+BillingAddress = #address{
+    first_name = <<"Glend">>,
+    last_name = <<"Maatita">>,
+    phone = <<"+628888888">>,
+    address = <<"Puncak Kertajaya">>,
+    city = <<"Surabaya">>,
+    postal_code = <<"12345">>,
+    country_code = <<"IDN">>
+},
+CustomerDetails = #customer_details{
+    first_name = <<"Glend">>,
+    last_name = <<"Maatita">>,
+    email = <<"glend.maatita@gmail.com">>,
+    phone = <<"+628888888">>,
+    billing_address = BillingAddress
+},
+charge_credit_card(<<"s0me-t0k3n">>,<<"mandiri">>,<<"order-9999">>, 10000, [ItemDetail], CustomerDetails).
+```
+See API Reference for complete vendor methods.
 
 ## Datatypes and API Reference
+
+### Datatypes
+
+For common datatypes (`address`, `item_detail`, `customer_details`), you can use exposed API to produce the record. To use all available veritrans data type, simply include the `veritrans.hrl`
+
+```erlang
+%% In your module...
+-include_lib("veritrans.hrl").
+```
+See [veritrans.hrl](https://github.com/toopay/veritrans-erlang/blob/master/include/veritrans.hrl) for more information.
 
 ### Vendor Specific Charges
  Method  | Spec 
