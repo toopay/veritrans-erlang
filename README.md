@@ -15,4 +15,4 @@ Now we can perform any Veritrans VT-Direct operations.
 
 ## LICENSE
 
-See (LICENSE file)[https://github.com/toopay/veritrans-erlang/blob/master/LICENSE]
+See [LICENSE file](https://github.com/toopay/veritrans-erlang/blob/master/LICENSE)
