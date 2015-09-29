@@ -14,7 +14,8 @@
     expire/1
 ]).
 -export([
-    charge_credit_card/6
+    charge_credit_card/5
+    ,charge_credit_card/6
 ]).
 
 %% Gen server callbacks
@@ -60,7 +61,10 @@ set_flag(Flag) ->
     ok.
 
 %% @doc Charge credit card 
--spec charge_credit_card(binary(), binary(), binary(), integer(), list(), list()) -> tuple().
+-spec charge_credit_card(binary(), binary(), binary(), integer(), list()) -> tuple().
+charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails) ->
+    charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, #customer_details{}).
+-spec charge_credit_card(binary(), binary(), binary(), integer(), list(), customer_details()) -> tuple().
 charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetails) ->
     charge(#credit_card_data{
             credit_card=#card{token_id=Token,bank=Bank},
@@ -223,7 +227,17 @@ build_options(Key) ->
 
 %% @doc Filter payload
 filter_payload(Payload) ->
-    lists:filtermap(fun({Key, Value}) ->
+    lists:filtermap(fun
+        % Filter item detail(s)
+        (#item_detail{} = MaybeItemDetail) -> 
+            ItemDetail = filter_payload(get_payload(MaybeItemDetail)),
+            HasItemDetail = length(ItemDetail) > 0,
+            case HasItemDetail of 
+                true -> {true,ItemDetail};
+                false -> false
+            end;
+        % Final checking on tuple value
+        ({Key, Value}) ->
         case Value of 
             [] -> false;
             0 -> false;
@@ -233,6 +247,14 @@ filter_payload(Payload) ->
                 HasItems = length(Items) > 0,
                 case HasItems of 
                     true -> {true, {Key, Items}};
+                    false -> false
+                end;
+             % Filter address (if the customer details contains either billing/shipping addresses)
+            (#address{} = MaybeAddress) -> 
+                Address = filter_payload(get_payload(MaybeAddress)),
+                HasAddress = length(Address) > 0,
+                case HasAddress of 
+                    true -> {true,{Key,Address}};
                     false -> false
                 end;
             _ -> true
