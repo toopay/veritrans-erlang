@@ -83,7 +83,7 @@ charge_credit_card(Token, Bank, OrderId, GrossAmount, ItemDetails, CustomerDetai
                         | indomaret_data()
                         | indosat_dompetku_data()) -> tuple().
 charge(Data) ->
-    Payload = get_payload(Data),
+    Payload = filter_payload(get_payload(Data)),
     gen_server:call(?MODULE, {post, ?CHARGE_ENDPOINT, Payload},?DEFAULT_TIMEOUT).
 
 %% @doc Capture authorized transaction
@@ -220,6 +220,24 @@ build_headers() ->
 %% @doc Generates options
 build_options(Key) ->
     [{basic_auth,{get_list(Key), ""}}].
+
+%% @doc Filter payload
+filter_payload(Payload) ->
+    lists:filtermap(fun({Key, Value}) ->
+        case Value of 
+            [] -> false;
+            0 -> false;
+            <<>> -> false;
+            MaybeValid when is_list(MaybeValid) -> 
+                Items = filter_payload(MaybeValid),
+                HasItems = length(Items) > 0,
+                case HasItems of 
+                    true -> {true, {Key, Items}};
+                    false -> false
+                end;
+            _ -> true
+        end
+    end, Payload).
 
 %% @doc Get the data
 get_data(MaybeJson) ->
