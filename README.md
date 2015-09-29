@@ -30,7 +30,12 @@ CustomerDetails = #customer_details{
     phone = <<"+628888888">>,
     billing_address = BillingAddress
 },
-charge_credit_card(<<"s0me-t0k3n">>,<<"mandiri">>,<<"order-9999">>, 10000, [ItemDetail], CustomerDetails).
+
+case charge_credit_card(<<"s0me-t0k3n">>,<<"mandiri">>,<<"order-9999">>, 10000, [ItemDetail], CustomerDetails) of 
+	{ok, Data} -> io:format("Success! Response : ~p~n",[Data]);
+	{error, Reason} -> io:format("Something goes wrong. Reason : ~p~n", [Reason])
+end.
+
 ```
 See API Reference for complete vendor methods.
 
