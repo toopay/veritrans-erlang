@@ -30,6 +30,7 @@
     ,charge_tcash/7
     ,charge_xl_tunai/6
     ,charge_bbm_money/6
+    ,charge_cstore/8
 ]).
 
 %% Gen server callbacks
@@ -260,6 +261,20 @@ charge_xl_tunai(OrderId, GrossAmount, FirstName, LastName, Email, Phone) ->
 -spec charge_bbm_money(binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
 charge_bbm_money(OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
      charge(#bbm_money_data{
+            transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
+            customer_details=#customer_details{
+                first_name=FirstName,
+                last_name=LastName,
+                email=Email,
+                phone=Phone
+            }
+        }).
+
+%% @doc Charge CStore
+-spec charge_cstore(binary(), binary(), binary(), binary(), binary(), binary(), binary(), binary()) -> tuple().
+charge_cstore(Store, Message, OrderId, GrossAmount, FirstName, LastName, Email, Phone) -> 
+     charge(#indomaret_data{
+            cstore=#cstore{store=Store, message=Message},
             transaction_details=#transaction_details{order_id=OrderId,gross_amount=GrossAmount},
             customer_details=#customer_details{
                 first_name=FirstName,
